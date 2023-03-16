@@ -1,4 +1,6 @@
 import os
+from sqlalchemy import engine
+
 from dotenv import load_dotenv
 load_dotenv()
 

@@ -1,34 +1,48 @@
 import datetime
-
+from app import Base, session
 from loader import app
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from sqlalchemy import DateTime
+from sqlalchemy import DateTime, Column, Integer, String, ForeignKey
 from config import POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_NAME, POSTGRES_PASSWORD
+
 
 app.config['SQLALCHEMY_DATABASE_URI'] = \
     f'postgres://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_NAME}'
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
 
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
-    phone = db.Column(db.String(30), unique=True, nullable=False)
-    login = db.Column(db.String(30), unique=True, nullable=False)
-    password = db.Column(db.String(32), nullable=False)
+class User(Base):
+    __tablename__ = 'user'
 
-    def __repr__(self):
-        return '<User %r>' % self.username
-
-
-class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(80), nullable=False)
-    text = db.Column(db.String(512), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False)
-    created_at = db.Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(80), nullable=False)
+    phone = Column(String(30), unique=True, nullable=False)
+    login = Column(String(30), unique=True, nullable=False)
+    password = Column(String(32), nullable=False)
 
     def __repr__(self):
-        return '<Post %r>' % self.title
+        return "<%s(name='%s', phone='%s', login='%s', password='%s')>" \
+            % (self.__class__.__qualname__, self.name, self.phone, self.login, self.password)
+
+    def save(self):
+        with session.begin() as s:
+            s.add(self)
+
+
+class Post(Base):
+    id = Column(Integer, primary_key=True)
+    title = Column(String(80), nullable=False)
+    text = Column(String(512), nullable=False)
+    user_id = Column(Integer, ForeignKey('User.id'), nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    def __repr__(self):
+        return "<%s(title='%s', text='%s', user_id='%s', created_at='%s'" \
+            % (self.__class__.__qualname__, self.title, self.text, self.user_id, self.created_at)
+
+    def save(self):
+        with session.begin() as s:
+            s.add(self)
+
+
+with session.begin() as s:
+    User.objects = s.query(User)
+    Post.objects = s.query(Post)
