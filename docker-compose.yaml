@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres
+    container_name: local_postgres2
+    restart: always
+    ports:
+      - "5435:5435"
+    environment:
+      POSTGRES_USER: user1
+      POSTGRES_PASSWORD: admin1
+    volumes:
+      - local_pgdata:/var/lib/postgresql/data
+
+volumes:
+  local_pgdata:
+  pgadmin-data:
