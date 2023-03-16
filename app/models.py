@@ -2,11 +2,6 @@ import datetime
 from app import Base, session
 from loader import app
 from sqlalchemy import DateTime, Column, Integer, String, ForeignKey
-from config import POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_NAME, POSTGRES_PASSWORD
-
-
-app.config['SQLALCHEMY_DATABASE_URI'] = \
-    f'postgres://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_NAME}'
 
 
 class User(Base):

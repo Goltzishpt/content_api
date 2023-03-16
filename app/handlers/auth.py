@@ -14,10 +14,13 @@ def registration():
 
 
 def login():
-    return 'login'
+    data = request.get_json()
+    data['password'] = get_password_hash(data['password'])
+    return jsonify(data)
 
 
 def logout():
-    return 'logout'
+    data = request.get_json()
+    return jsonify(data)
 
 
