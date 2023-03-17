@@ -1,6 +1,6 @@
 import datetime
 from app import Base, session
-from loader import app
+from app.loader import app
 from sqlalchemy import DateTime, Column, Integer, String, ForeignKey
 
 
@@ -23,6 +23,8 @@ class User(Base):
 
 
 class Post(Base):
+    __tablename__ = 'post'
+
     id = Column(Integer, primary_key=True)
     title = Column(String(80), nullable=False)
     text = Column(String(512), nullable=False)
