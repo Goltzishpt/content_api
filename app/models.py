@@ -11,7 +11,7 @@ class User(Base):
     name = Column(String(80), nullable=False)
     phone = Column(String(30), unique=True, nullable=False)
     login = Column(String(30), unique=True, nullable=False)
-    password = Column(String(32), nullable=False)
+    password = Column(String(64), nullable=False)
 
     def __repr__(self):
         return "<%s(name='%s', phone='%s', login='%s', password='%s')>" \
@@ -28,7 +28,7 @@ class Post(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String(80), nullable=False)
     text = Column(String(512), nullable=False)
-    user_id = Column(Integer, ForeignKey('User.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
 
     def __repr__(self):
