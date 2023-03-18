@@ -6,15 +6,6 @@ from app import config
 from app.loader import app
 
 
-token = request.cookies.get('access_token')
-try:
-    decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-except jwt.InvalidTokenError:
-    pass
-
-user_id = decoded_token.get('sub')
-
-
 def __connection() -> redis.Redis:
     r = redis.Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, db=config.REDIS_DB)
     return r
