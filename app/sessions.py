@@ -1,6 +1,18 @@
-from app import config
+import jwt
+from flask import request
 import redis
 from uuid import uuid4
+from app import config
+from app.loader import app
+
+
+token = request.cookies.get('access_token')
+try:
+    decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+except jwt.InvalidTokenError:
+    pass
+
+user_id = decoded_token.get('sub')
 
 
 def __connection() -> redis.Redis:
@@ -13,14 +25,19 @@ def set(user_id: int) -> str:
     r = __connection()
     r.set(name=token, value=user_id)
     r.close()
-    return token
+    encode_token = jwt.encode({'token': token}, config.SECRET_KEY)
+    return encode_token
 
 
 def get(token: str) -> int:
-    r = __connection()
-    user_id = r.get(name=token)
-    r.close()
-    return user_id
+    try:
+        decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        r = __connection()
+        user_id = r.get(name=decoded_token)
+        r.close()
+        return user_id
+    except jwt.InvalidTokenError:
+        'User not found'
 
 
 def delete(token: str) -> None:
