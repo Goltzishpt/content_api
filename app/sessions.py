@@ -22,9 +22,9 @@ def set(user_id: int) -> str:
 
 def get(token: str) -> int:
     try:
-        decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        decoded_token = jwt.decode(token, config.SECRET_KEY, algorithms=['HS256'])
         r = __connection()
-        user_id = r.get(name=decoded_token)
+        user_id = r.get(name=decoded_token.get('token'))
         r.close()
         return user_id
     except jwt.InvalidTokenError:
