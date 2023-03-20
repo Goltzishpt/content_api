@@ -28,10 +28,14 @@ def get(token: str) -> int:
         r.close()
         return user_id
     except jwt.InvalidTokenError:
-        'User not found'
+        'User not found!'
 
 
 def delete(token: str) -> None:
-    r = __connection()
-    r.delete(token)
-    r.close()
+    try:
+        decoded_token = jwt.decode(token, config.SECRET_KEY, algorithms=['HS256'])
+        r = __connection()
+        r.delete(decoded_token.get('token'))
+        r.close()
+    except jwt.InvalidTokenError:
+        'User not found!'
