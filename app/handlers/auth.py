@@ -51,16 +51,11 @@ def logout():
         cursor = conn.cursor()
         cursor.execute('SELECT id, password FROM "user" WHERE login =%s', (username,))
         cur_data = cursor.fetchone()
-        if cur_data is not None:
-            if cur_data[1] == password:
-                out = jsonify(state=0, msg='delete')
-                out.delete_cookie('token', set(cur_data[0]), httponly=True)
-                delete(set(cur_data[0]))
-                return out
-            else:
-                return 'Incorrect password!'
-        else:
-            return 'User not found!'
+        if cur_data[1] == password:
+            out = jsonify(state=0, msg='delete')
+            out.delete_cookie('token', set(cur_data[0]), httponly=True)
+            delete(set(cur_data[0]))
+            return out
     finally:
         conn.close()
 
