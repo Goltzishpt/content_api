@@ -21,7 +21,6 @@ def login():
     data = request.get_json()
     username = data['login']
     password = get_password_hash(data['password'])
-    print(password)
     conn = psycopg2.connect(database="ps_db", user="test",
                             password="admin", host="localhost", port=5432)
     try:
@@ -29,9 +28,7 @@ def login():
         cursor.execute('SELECT id, password FROM "user" WHERE login =%s', (username,))
         cur_data = cursor.fetchone()
         if cur_data is not None:
-            print(cur_data)
             if cur_data[1] == password:
-
                 out = jsonify(state=0, msg='success')
                 out.set_cookie('token', set(cur_data[0]))
                 return out
