@@ -1,5 +1,5 @@
 import psycopg2
-from flask import jsonify, request
+from flask import jsonify, request, make_response
 from flask_login import logout_user
 from app.loader import app
 from app.models import User
@@ -31,7 +31,7 @@ def login():
         if cur_data is not None:
             if cur_data[1] == password:
                 out = jsonify(state=0, msg='success')
-                out.set_cookie('token', set(cur_data[0]), httponly=True)
+                out.set_cookie('token', set(cur_data[0].value), httponly=True)
                 return out
             else:
                 return 'Incorrect password!'
@@ -51,11 +51,17 @@ def logout():
         cursor = conn.cursor()
         cursor.execute('SELECT id, password FROM "user" WHERE login =%s', (username,))
         cur_data = cursor.fetchone()
-        if cur_data[1] == password:
-            out = jsonify(state=0, msg='delete')
-            out.delete_cookie('token', set(cur_data[0]), httponly=True)
-            delete(set(cur_data[0]))
-            return out
+        if cur_data and cur_data[1] == password:
+            token = request.cookies.get('token')
+            if token:
+                delete(token)
+                out = make_response(jsonify(state=0, msg='delete'))
+                out.delete_cookie(token, httponly=True)
+                return out
+            else:
+                return make_response(jsonify(state=1, msg='Token not found'), 401)
+        else:
+            return make_response(jsonify(state=1, msg='Invalid login or password'), 401)
     finally:
         conn.close()
 
