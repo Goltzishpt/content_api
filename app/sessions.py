@@ -25,8 +25,9 @@ def get(token: str) -> int:
         decoded_token = jwt.decode(token, config.SECRET_KEY, algorithms=['HS256'])
         r = __connection()
         user_id = r.get(name=decoded_token.get('token'))
+        user_id_int = int(user_id.decode('utf-8'))
         r.close()
-        return user_id
+        return user_id_int
     except jwt.InvalidTokenError:
         'User not found!'
 

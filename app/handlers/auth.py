@@ -31,7 +31,7 @@ def login():
         if cur_data is not None:
             if cur_data[1] == password:
                 out = jsonify(state=0, msg='success')
-                out.set_cookie('token', set(cur_data[0].value), httponly=True)
+                out.set_cookie('token', set(cur_data[0]), httponly=True)
                 return out
             else:
                 return 'Incorrect password!'
