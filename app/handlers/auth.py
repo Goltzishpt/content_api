@@ -1,15 +1,7 @@
-import psycopg2
-from flask import jsonify, request, make_response
-from flask_login import logout_user
-from app.loader import app
+from flask import jsonify, request
 from app.models import User
 from app.utils import get_password_hash
 from app import sessions
-import sqlalchemy
-
-
-def homepage():
-    return {'data': 'homepage'}
 
 
 def registration():
@@ -26,7 +18,7 @@ def login():
     data = request.get_json()
     username = data['login']
     password = get_password_hash(data['password'])
-    
+
     try:
         user: User = User.objects.filter(User.login==username, User.password==password).one()
         out = jsonify(success=True)
@@ -37,13 +29,15 @@ def login():
 
 
 def logout():
-    data = request.get_json()
-    username = data['login']
-    password = get_password_hash(data['password'])
+    token = request.cookies.get('token')
 
     try:
-
+        sessions.delete(token)
     except:
         return jsonify(success=False)
+    out = jsonify(success=True)
+    out.set_cookie('token', '', httponly=True)
+    return out
+
 
 

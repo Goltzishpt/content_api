@@ -21,22 +21,17 @@ def set(user_id: int) -> str:
 
 
 def get(token: str) -> int:
-    try:
-        decoded_token = jwt.decode(token, config.SECRET_KEY, algorithms=['HS256'])
-        r = __connection()
-        user_id = r.get(name=decoded_token.get('token'))
-        user_id_int = int(user_id.decode('utf-8'))
-        r.close()
-        return user_id_int
-    except jwt.InvalidTokenError:
-        'User not found!'
+    decoded_token = jwt.decode(token, config.SECRET_KEY, algorithms=['HS256'])
+    r = __connection()
+    user_id = r.get(name=decoded_token.get('token'))
+    user_id_int = int(user_id.decode('utf-8'))
+    r.close()
+    return user_id_int
 
 
 def delete(token: str) -> None:
-    try:
-        decoded_token = jwt.decode(token, config.SECRET_KEY, algorithms=['HS256'])
-        r = __connection()
-        r.delete(decoded_token.get('token'))
-        r.close()
-    except jwt.InvalidTokenError:
-        'User not found!'
+    decoded_token = jwt.decode(token, config.SECRET_KEY, algorithms=['HS256'])
+    r = __connection()
+    r.delete(decoded_token.get('token'))
+    r.close()
+
