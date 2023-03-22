@@ -1,5 +1,5 @@
 import datetime
-from app import Base, session
+from app import Base, Session
 from app.loader import app
 from sqlalchemy import DateTime, Column, Integer, String, ForeignKey
 
@@ -18,7 +18,7 @@ class User(Base):
             % (self.__class__.__qualname__, self.name, self.phone, self.login, self.password)
 
     def save(self):
-        with session.begin() as s:
+        with Session() as s:
             s.add(self)
 
 
@@ -36,10 +36,34 @@ class Post(Base):
             % (self.__class__.__qualname__, self.title, self.text, self.user_id, self.created_at)
 
     def save(self):
-        with session.begin() as s:
+        with Session.begin() as s:
             s.add(self)
 
+    def update_post(self, title, text):
+        with Session.begin() as s:
+            post = s.query(Post).filter(Post.id == self.id).first()
+            if title:
+                post.title = title
+            if text:
+                post.text = text
+            s.commit()
 
-with session.begin() as s:
+    def delete(self):
+        with Session.begin() as s:
+            post = s.query(Post).filter(Post.id == self.id).first()
+            s.delete(post)
+            s.commit()
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'text': self.text,
+            'user_id': self.user_id,
+            'created_at': self.created_at.timestamp()
+        }
+
+
+with Session() as s:
     User.objects = s.query(User)
     Post.objects = s.query(Post)

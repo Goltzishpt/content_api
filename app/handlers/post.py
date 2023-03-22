@@ -1,10 +1,8 @@
-import psycopg2
 from flask import request, jsonify
 from datetime import datetime
-from app import session
+from app import sessions
 from app.loader import app
 from app.models import User, Post
-from app.sessions import get
 
 
 def create_post():
@@ -13,39 +11,73 @@ def create_post():
     text = data['text']
 
     token = request.cookies.get('token')
-    if not token:
-        return 'Unauthorized!'
 
-    conn = psycopg2.connect(database="ps_db", user="test",
-                            password="admin", host="localhost", port=5432)
-    print(get(token))
     try:
-        cursor = conn.cursor()
-        cursor.execute('SELECT id FROM "user" WHERE id =%s', (get(token),))
-        user_id = cursor.fetchone()
-        if not user_id:
-            return 'Unauthorized!'
-        else:
-            cursor.execute('INSERT into post (title, text, user_id, created_at) VALUES (%s, %s, %s, %s)',
-                           (title, text, user_id, datetime.utcnow()))
-            conn.commit()
-            return 'Post created!'
-    finally:
-        conn.close()
+        user_id = sessions.get(token)
 
+    except:
+        return jsonify(success=False)
+    Post(title=title, text=text, user_id=user_id, created_at=datetime.utcnow()).save()
+    return jsonify(success=True)
 
 
 def show_all_post():
-    pass
+    objects = Post.objects
+    if request.args.get('user_id'):
+        user_id = int(request.args.get('user_id'))
+        objects = objects.filter(Post.user_id==user_id)
+
+    if request.args.get('order_by') == 'asc':
+        objects = objects.order_by(Post.created_at.asc())
+    elif request.args.get('order_by') == 'desc':
+        objects = objects.order_by(Post.created_at.desc())
+
+    if request.args.get('limit') and request.args.get('offset'):
+        limit = int(request.args.get('limit'))
+        offset = int(request.args.get('offset'))
+        objects = objects.limit(limit).offset(offset)
+
+    posts = [post.to_dict() for post in objects.all()]
+    return jsonify(posts=posts)
 
 
-def show_post():
-    pass
+def show_post(post_id):
+    post = Post.objects.filter(Post.id==int(post_id)).one()
+    return jsonify(post=post.to_dict())
 
 
-def update_post():
-    pass
+def update_post(post_id):
+    token = request.cookies.get('token')
+    try:
+        user_id = sessions.get(token)
+    except:
+        return jsonify(success=False)
+
+    post = Post.objects.filter(Post.id == int(post_id)).one()
+
+    if post.user_id != user_id:
+        return jsonify(success=False)
+
+    data = request.get_json()
+    title = data['title']
+    text = data['text']
+
+    post.update_post(title=title, text=text)
+    return jsonify(success=True)
 
 
-def delete_post():
-    pass
+def delete_post(post_id):
+    token = request.cookies.get('token')
+    try:
+        user_id = sessions.get(token)
+    except:
+        return jsonify(success=False)
+
+    post = Post.objects.filter(Post.id==int(post_id)).first()
+
+    if post.user_id != user_id:
+        return jsonify(success=False)
+    post.delete()
+    return jsonify(success=True)
+
+
