@@ -1,5 +1,4 @@
 import jwt
-from flask import request
 import redis
 from uuid import uuid4
 from app import config
